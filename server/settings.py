@@ -31,7 +31,7 @@ ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Next.js dev
     "http://127.0.0.1:3000",
-    "https://taxhub.onvercel.app",
+    "https://taxhub.onrender.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # ✅ important for cookies
