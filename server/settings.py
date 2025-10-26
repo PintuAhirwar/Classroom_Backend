@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Next.js dev
     "http://127.0.0.1:3000",
+    "https://taxhub.vercel.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # ✅ important for cookies
