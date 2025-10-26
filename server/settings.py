@@ -35,6 +35,7 @@ ALLOWED_HOSTS = [
 # CORS (dev)
 CORS_ALLOWED_ORIGINS = [
     "https://taxhubeducation.onrender.com",  # frontend live
+    "https://taxhub.onrender.com",
     "http://localhost:3000",                 # local dev
     "http://127.0.0.1:3000",
 ]
@@ -44,6 +45,7 @@ CORS_ALLOW_CREDENTIALS = True  # ✅ important for cookies
 
 CSRF_TRUSTED_ORIGINS = [
     "https://taxhubeducation.onrender.com",
+    "https://taxhub.onrender.com",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
