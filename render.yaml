@@ -3,9 +3,9 @@ services:
     name: taxhub-backend
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn taxhub_backend.wsgi:application"
+    startCommand: "gunicorn server.wsgi:application"
     envVars:
       - key: DJANGO_SETTINGS_MODULE
-        value: taxhub_backend.settings
+        value: server.settings
       - key: DEBUG
         value: False
