@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-4l#57+5#2$fs6-y#hvj6bm)+y5lo-u%of-#cj3#^ukm613r7y1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "taxhub.onrender.com"]
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 # CORS (dev)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Next.js dev
