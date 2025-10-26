@@ -26,16 +26,27 @@ SECRET_KEY = 'django-insecure-4l#57+5#2$fs6-y#hvj6bm)+y5lo-u%of-#cj3#^ukm613r7y1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
+ALLOWED_HOSTS = [
+    "taxhub.onrender.com",
+    "taxhubeducation.onrender.com",
+    "localhost",
+    "127.0.0.1"
+]
 # CORS (dev)
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Next.js dev
+    "https://taxhubeducation.onrender.com",  # frontend live
+    "http://localhost:3000",                 # local dev
     "http://127.0.0.1:3000",
-    "https://taxhub.onrender.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # ✅ important for cookies
 # Application definition
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://taxhubeducation.onrender.com",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 
 # Add cookie names
 JWT_AUTH_COOKIE = "access_token"
@@ -63,9 +74,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
