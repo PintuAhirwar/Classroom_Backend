@@ -27,27 +27,28 @@ SECRET_KEY = 'django-insecure-4l#57+5#2$fs6-y#hvj6bm)+y5lo-u%of-#cj3#^ukm613r7y1
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "taxhub.onrender.com",
-    "taxhubeducation.onrender.com",
     "localhost",
     "127.0.0.1"
+    "taxhub.onrender.com",
+    "taxhubeducation.onrender.com",
+
 ]
 # CORS (dev)
 CORS_ALLOWED_ORIGINS = [
-    "https://taxhubeducation.onrender.com",  # frontend live
-    "https://taxhub.onrender.com",
     "http://localhost:3000",                 # local dev
     "http://127.0.0.1:3000",
+    "https://taxhubeducation.onrender.com",  # frontend live
+    "https://taxhub.onrender.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # ✅ important for cookies
 # Application definition
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://taxhubeducation.onrender.com",
-    "https://taxhub.onrender.com",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://taxhubeducation.onrender.com",
+    "https://taxhub.onrender.com",
 ]
 
 # Add cookie names
