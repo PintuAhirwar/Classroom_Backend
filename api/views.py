@@ -12,38 +12,46 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 # Create your views here.
 
+def set_jwt_cookies(response, refresh):
+    response.set_cookie(
+        key="access_token",
+        value=str(refresh.access_token),
+        httponly=True,
+        secure=True,
+        samesite="None",
+        max_age=60 * 30,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=str(refresh),
+        httponly=True,
+        secure=True,
+        samesite="None",
+        max_age=60 * 60 * 24,
+    )
+    return response
+
 class ProfileView(generics.RetrieveUpdateAPIView):
-    authentication_classes = [JWTAuthentication]
-    serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ProfileSerializer
 
-    def get(self, request):
-        serializer = ProfileSerializer(request.user)
-        return Response(serializer.data)
-    
-    def put(self, request):
-        serializer = ProfileSerializer(
-            request.user, 
-            data=request.data, 
-            partial=True,
-            context={'request': request}
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+@method_decorator(csrf_exempt, name="dispatch")
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save(is_active=False)  # Deactivate until OTP verified
+            user = serializer.save()
+            user.is_active = False
+            user.is_verified = False
+            user.save()  
             otp = user.generate_otp()
 
             # Send OTP via email
@@ -56,7 +64,7 @@ class RegisterView(APIView):
             return Response({'message': 'OTP sent to email.'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@method_decorator(csrf_exempt, name="dispatch")
 class VerifyOTPView(APIView):
     permission_classes = [AllowAny]
 
@@ -74,15 +82,15 @@ class VerifyOTPView(APIView):
             user.otp = ''
             user.save()
             refresh = RefreshToken.for_user(user)
-            return Response({
-                'message': 'Account verified successfully!',
-                'refresh': str(refresh),
-                'access': str(refresh.access_token)
-            }, status=status.HTTP_200_OK)
+            response = Response(
+                {"message": "Account verified successfully"},
+                status=status.HTTP_200_OK
+            )
+            return set_jwt_cookies(response, refresh)
         else:
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
-
+@method_decorator(csrf_exempt, name="dispatch")
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -97,22 +105,21 @@ class LoginView(APIView):
             return Response({'error': 'Please verify your account first'}, status=status.HTTP_403_FORBIDDEN)
 
         refresh = RefreshToken.for_user(user)
-        return Response({
-            'message': 'Login successful',
-            'refresh': str(refresh),
-            'access': str(refresh.access_token)
-        })
+        response = Response(
+            {"message": "Login successful"},
+            status=status.HTTP_200_OK
+        )
+        return set_jwt_cookies(response, refresh)
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
-            refresh_token = request.data.get("refresh_token")
-            if refresh_token:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-            return Response({"message": "Logout successful"}, status=200)
+            response = Response({"message": "Logout successful"})
+            response.delete_cookie("access_token")
+            response.delete_cookie("refresh_token")
+            return response
         except Exception as e:
             return Response({"error": str(e)}, status=400)
 

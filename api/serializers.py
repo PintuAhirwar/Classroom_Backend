@@ -27,7 +27,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ["id", "name", "mobile"]
+        fields = ["id", "name", "email", "phone"]
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -38,12 +38,19 @@ class RegisterSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        user = CustomUser.objects.create_user(**validated_data)
-        user.is_active = False  # deactivate until OTP verified
+        password = validated_data.pop("password")
+        user = CustomUser(**validated_data)
+        user.set_password(password)
+        user.is_active = False
+        user.is_verified = False
         user.save()
         return user
 
-
+class PublicUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ["id", "name"]
+        
 class SliderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Slider
