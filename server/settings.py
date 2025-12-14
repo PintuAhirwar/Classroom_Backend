@@ -29,13 +29,15 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-CSRF_COOKIE_SECURE = True
+#local dev me cookies ko secure = false rakhna padega
+CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_SAMESITE = "None"
 
-SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_SAMESITE = "None"
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ALLOWED_HOSTS = [
@@ -102,7 +104,7 @@ MIDDLEWARE = [
 ]
 
 # Email settings (Gmail SMTP)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
@@ -202,6 +204,11 @@ SIMPLE_JWT = {
     "AUTH_COOKIE_HTTP_ONLY": True,
     "AUTH_COOKIE_SAMESITE": "None",
 }
+
+#local dev ke liye
+if DEBUG:
+    SIMPLE_JWT['AUTH_COOKIE_SECURE'] = False
+    SIMPLE_JWT['AUTH_COOKIE_SAMESITE'] = 'Lax'
 
 # Timezone (optional)
 TIME_ZONE = "Asia/Kolkata"
