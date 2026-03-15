@@ -2,42 +2,105 @@
 from rest_framework import viewsets, permissions
 from .models import Order, OrderItem
 from .serializers import OrderSerializer, VoucherSerializer
-from .models import Voucher
-from api.models import Course
+from .models import Voucher, Order
+from api.models import Lecture
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from django.utils import timezone
-# import razorpay
-
-
-# client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def create_razorpay_order(request):
-#     data = request.data
-#     amount = int(data.get('amount', 0)) * 100  # Razorpay expects paise
-#     currency = "INR"
-#     receipt = f"order_rcptid_{request.user.id}"
-    
-#     razorpay_order = client.order.create(dict(amount=amount, currency=currency, receipt=receipt))
-    
-#     return Response({
-#         "order_id": razorpay_order['id'],
-#         "amount": razorpay_order['amount'],
-#         "currency": razorpay_order['currency']
-#     })
-
+import qrcode
+from io import BytesIO
+from django.http import HttpResponse
+from rest_framework import generics
+from rest_framework.decorators import action
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all().order_by('-created_at')
     serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return Order.objects.all().order_by("-created_at")
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        user = self.request.user if self.request.user.is_authenticated else None
+        serializer.save(user=user)
+
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="my-orders"
+    )
+    def my_orders(self, request):
+        orders = Order.objects.filter(user=request.user).order_by("-created_at")
+        serializer = self.get_serializer(orders, many=True)
+        return Response(serializer.data)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def generate_upi_link(request, order_id):
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return Response({"error": "Order not found"}, status=404)
+
+    upi_id = "mr.ahirwar7879-3@okicici"
+    payee = "Pintu Ahirwar"
+    amount = order.final_amount
+    note = f"Order#{order.id}"
+
+    upi_link = (
+        f"upi://pay?pa={upi_id}"
+        f"&pn={payee}"
+        f"&am={amount}"
+        f"&cu=INR"
+        f"&tn={note}"
+    )
+
+    return Response({"upi_link": upi_link})
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def upi_qr(request, order_id):
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return Response({"error": "Order not found"}, status=404)
+
+    upi_id = "mr.ahirwar7879-3@okicici"
+    payee = "Pintu Ahirwar"
+    amount = order.final_amount
+    note = f"Order#{order.id}"
+
+    upi_link = (
+        f"upi://pay?pa={upi_id}"
+        f"&pn={payee}"
+        f"&am={amount}"
+        f"&cu=INR"
+        f"&tn={note}"
+    )
+
+    qr = qrcode.make(upi_link)
+    buffer = BytesIO()
+    qr.save(buffer, format='PNG')
+    buffer.seek(0)
+
+    return HttpResponse(buffer.getvalue(), content_type="image/png")
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def submit_utr(request, order_id):
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return Response({"error": "Order not found"}, status=404)
+
+    order.utr = request.data.get("utr")
+    order.payment_status = "VERIFICATION_PENDING"
+    order.save()
+
+    return Response({"message": "Verification pending"})
 
 @api_view(["POST"])
 @permission_classes([IsAdminUser])
@@ -50,23 +113,25 @@ def create_voucher(request):
     code = request.data.get("code")
 
     try:
-        course = Course.objects.get(id=course_id)
+        course = Lecture.objects.get(id=course_id)
         voucher = Voucher.objects.create(
             course=course,
             discount_amount=discount,
             code=code,
         )
         return Response({"success": True, "voucher": VoucherSerializer(voucher).data})
-    except Course.DoesNotExist:
+    except Lecture.DoesNotExist:
         return Response({"error": "Course not found"}, status=400)
     
+
 @api_view(["POST"])
+@permission_classes([AllowAny]) 
 def validate_voucher(request):
     code = request.data.get("code")
     course_id = request.data.get("course_id")
 
     try:
-        voucher = Voucher.objects.get(code=code, course_id=course_id)
+        voucher = Voucher.objects.get(code__iexact=code, course_id=course_id)
         if not voucher.is_valid():
             return Response({"error": "Voucher expired or invalid"}, status=400)
         return Response({

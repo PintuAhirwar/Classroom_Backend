@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import Slider, Course, Faculty, Testimonial, Marks, demofile, demolecture
+from .models import Slider, Faculty, Testimonial, Marks, demofile, demolecture
 from django.contrib.auth import authenticate
 from .models import CustomUser
+from courses.models import Lecture, Book
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -54,17 +55,14 @@ class PublicUserSerializer(serializers.ModelSerializer):
 class SliderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Slider
-        fields = ['id', 'title', 'description', 'image', 'is_active']
-
-class CourseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Course
-        fields = ['id', 'title', 'faculty', 'image', 'price', 'is_active']
+        fields = ['id', 'title', 'description',
+                  'desktop_image', 'mobile_image',
+                   'show_search', 'is_active']
 
 class FacultySerializer(serializers.ModelSerializer):
     class Meta:
         model = Faculty
-        fields = ['id', 'name', 'subject', 'social_media', 'image', 'is_active']
+        fields = ['id', 'name', 'subject', 'image', 'instagram', 'youtube', 'linkedin', 'is_active']
 
 class TestimonialSerializer(serializers.ModelSerializer):
     class Meta:
@@ -77,12 +75,38 @@ class MarksSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'image', 'is_active']
 
 class demofileSerializer(serializers.ModelSerializer):
+    book_detail = serializers.SerializerMethodField()
+
     class Meta:
         model = demofile
-        fields = ['id', 'name', 'image', 'urls', 'description', 'is_active']
+        fields = ['id', 'name', 'description', 'image', 'urls', 'is_active', 'book', 'book_detail']
+
+    def get_book_detail(self, obj):
+        if not obj.book:
+            return None
+        return {
+            'id':    obj.book.id,
+            'title': obj.book.title,
+            'slug':  obj.book.slug,
+            'price': str(obj.book.price),
+            'image': str(obj.book.image) if obj.book.image else None,
+        }
 
 class demolectureSerializer(serializers.ModelSerializer):
+    lecture_detail = serializers.SerializerMethodField()
+
     class Meta:
         model = demolecture
-        fields = ['id', 'title', 'url', 'description', 'is_active']
+        fields = ['id', 'title', 'description', 'url', 'is_active', 'lecture', 'lecture_detail']
+
+    def get_lecture_detail(self, obj):
+        if not obj.lecture:
+            return None
+        return {
+            'id':         obj.lecture.id,
+            'title':      obj.lecture.title,
+            'slug':       obj.lecture.slug,
+            'base_price': str(obj.lecture.base_price) if obj.lecture.base_price else None,
+            'image':      str(obj.lecture.image) if obj.lecture.image else None,
+        }
 

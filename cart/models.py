@@ -1,14 +1,12 @@
 from django.db import models
 from django.conf import settings
-
-# change import to your course model path if needed
-from api.models import Course  # adjust app name
+from courses.models import Lecture  # adjust app name
 
 User = settings.AUTH_USER_MODEL
 
 class CartItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='in_carts')
+    course = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='in_carts')
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

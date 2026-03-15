@@ -1,16 +1,16 @@
 from rest_framework import serializers
 from .models import CartItem
 # adjust Course serializer fields to your Course model fields
-from api.models import Course
+from courses.models import Lecture
 
 class CourseSmallSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Course
+        model = Lecture
         fields = ('id', 'title', 'price', 'image', 'faculty')  # adjust as needed
 
 class CartItemSerializer(serializers.ModelSerializer):
     course = CourseSmallSerializer(read_only=True)
-    course_id = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), write_only=True, source='course')
+    course_id = serializers.PrimaryKeyRelatedField(queryset=Lecture.objects.all(), write_only=True, source='course')
 
     class Meta:
         model = CartItem

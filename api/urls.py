@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
-    SliderViewSet, CourseViewSet, FacultyViewSet, 
+    SliderViewSet, FacultyViewSet, 
     TestimonialViewSet, MarksViewSet, demofileViewSet, 
     demolectureViewSet, LoginView, RegisterView, VerifyOTPView, ProfileView,
     LogoutView
@@ -12,7 +12,6 @@ from .views import (
 
 router = DefaultRouter()
 router.register(r'slider', SliderViewSet, basename='slider')
-router.register(r'course', CourseViewSet, basename='course')
 router.register(r'faculty', FacultyViewSet, basename='faculty') 
 router.register(r'testimonial', TestimonialViewSet, basename='testimonial')
 router.register(r'marks', MarksViewSet, basename='marks')

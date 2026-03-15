@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from .models import CartItem
 from .serializers import CartItemSerializer
-from api.models import Course
+from courses.models import Lecture
 
 class CartListCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]

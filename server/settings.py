@@ -43,15 +43,15 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "taxhub.onrender.com",
-    "taxhubeducation.onrender.com",
+    "classroom.onrender.com",
+    "classroomeducation.onrender.com",
 
 ]
 # CORS (dev)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",                 # local dev
     "http://127.0.0.1:3000",
-    "https://taxhubeducation.onrender.com",  # frontend live
+    "https://classroomeducation.onrender.com",  # frontend live
 ]
 
 
@@ -65,7 +65,7 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://taxhubeducation.onrender.com",
+    "https://classroomeducation.onrender.com",
 ]
 
 CSRF_COOKIE_SECURE = True
@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     
     # Third-party (simplified)
     'rest_framework',
@@ -89,6 +90,8 @@ INSTALLED_APPS = [
     'api',
     'cart',
     'orders',
+    'courses',
+    'activity_tracking',
 ]
 
 MIDDLEWARE = [
@@ -104,7 +107,7 @@ MIDDLEWARE = [
 ]
 
 # Email settings (Gmail SMTP)
-EMAIL_BACKEND = 'django.core.mail.backends.smpt.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
@@ -179,6 +182,9 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
     ],
 }
 

@@ -3,6 +3,8 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.contrib.auth.models import AbstractUser
 import random
+from courses.models import Lecture, Book
+
 
 # Create your models here.
 
@@ -72,18 +74,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class Slider(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='slider/')
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(default=timezone.now)
-    
-    def __str__(self):
-        return self.title
-
-class Course(models.Model):
-    title = models.CharField(max_length=200)
-    faculty = models.CharField(max_length=50)
-    image = models.ImageField(upload_to='course/')
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    desktop_image = models.ImageField(upload_to='slider/desktop/', null=True, blank=True)
+    mobile_image = models.ImageField(upload_to='slider/mobile/', null=True, blank=True)
+    show_search = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
     
@@ -93,8 +86,12 @@ class Course(models.Model):
 class Faculty(models.Model):
     name = models.CharField(max_length=50)
     subject = models.CharField(max_length=100)
-    social_media = models.URLField(max_length=200, blank=True)
     image = models.ImageField(upload_to='faculty/')
+
+    instagram = models.URLField(blank=True, null=True)
+    youtube = models.URLField(blank=True, null=True)
+    linkedin = models.URLField(blank=True, null=True)
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
     
@@ -130,6 +127,11 @@ class demofile(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
     
+    book = models.ForeignKey(
+        Book, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="demo_files"
+    )
+
     def __str__(self):
         return self.name
 
@@ -139,6 +141,11 @@ class demolecture(models.Model):
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
-    
+
+    lecture = models.ForeignKey(
+        Lecture, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="demo_lectures"
+    )
+
     def __str__(self):
         return self.title

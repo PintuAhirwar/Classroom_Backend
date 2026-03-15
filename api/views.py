@@ -1,7 +1,8 @@
+from urllib import response
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, generics
-from .models import Slider, Course, Faculty, Testimonial, Marks, demofile, demolecture, CustomUser
-from .serializers import SliderSerializer, CourseSerializer, FacultySerializer, TestimonialSerializer, MarksSerializer, demofileSerializer, demolectureSerializer, ProfileSerializer, RegisterSerializer, UserSerializer
+from .models import Slider, Faculty, Testimonial, Marks, demofile, demolecture, CustomUser
+from .serializers import SliderSerializer, FacultySerializer, TestimonialSerializer, MarksSerializer, demofileSerializer, demolectureSerializer, ProfileSerializer, RegisterSerializer, UserSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -14,6 +15,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 # Create your views here.
@@ -23,23 +25,28 @@ def set_jwt_cookies(response, refresh):
         key="access_token",
         value=str(refresh.access_token),
         httponly=True,
-        secure=True,
-        samesite="None",
+        secure=settings.SIMPLE_JWT.get('AUTH_COOKIE_SECURE', True),  # Use settings
+        samesite=settings.SIMPLE_JWT.get('AUTH_COOKIE_SAMESITE', 'None'),
         max_age=60 * 30,
+        path="/",
     )
     response.set_cookie(
         key="refresh_token",
         value=str(refresh),
         httponly=True,
-        secure=True,
-        samesite="None",
+        secure=settings.SIMPLE_JWT.get('AUTH_COOKIE_SECURE', True),  # Use settings
+        samesite=settings.SIMPLE_JWT.get('AUTH_COOKIE_SAMESITE', 'None'),  # Use settings
         max_age=60 * 60 * 24,
+        path="/",
     )
     return response
 
 class ProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProfileSerializer
+    
+    def get_object(self):
+        return self.request.user
 
 @method_decorator(csrf_exempt, name="dispatch")
 class RegisterView(APIView):
@@ -76,6 +83,9 @@ class VerifyOTPView(APIView):
         except CustomUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        print(f"Debug: Stored OTP for {email}:{user.otp}")
+        print(f"Debug: Received OTP:{otp}")
+
         if user.otp == otp:
             user.is_active = True
             user.is_verified = True
@@ -83,11 +93,19 @@ class VerifyOTPView(APIView):
             user.save()
             refresh = RefreshToken.for_user(user)
             response = Response(
-                {"message": "Account verified successfully"},
+                {"message": "Account verified successfully",
+                 "access": str(refresh.access_token),
+                 "refresh": str(refresh),
+                 "user": {
+                     "id": user.id,
+                     "name": user.name,
+                     "email": user.email,
+                 }},
                 status=status.HTTP_200_OK
             )
             return set_jwt_cookies(response, refresh)
         else:
+            print(f"Debug: OTP mismatch for {email}")
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -105,10 +123,17 @@ class LoginView(APIView):
             return Response({'error': 'Please verify your account first'}, status=status.HTTP_403_FORBIDDEN)
 
         refresh = RefreshToken.for_user(user)
-        response = Response(
-            {"message": "Login successful"},
-            status=status.HTTP_200_OK
-        )
+        response = Response({
+            "message": "Login successful",
+            "access": str(refresh.access_token),  # Add this
+            "refresh": str(refresh),  # Add this
+            "user": {  # Add this
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                # Add other fields
+            }
+        }, status=status.HTTP_200_OK)
         return set_jwt_cookies(response, refresh)
 
 class LogoutView(APIView):
@@ -128,10 +153,6 @@ class SliderViewSet(viewsets.ModelViewSet):
     serializer_class = SliderSerializer
     permission_classes = [AllowAny]
 
-class CourseViewSet(viewsets.ModelViewSet):
-    queryset = Course.objects.filter(is_active=True).order_by('-id')
-    serializer_class = CourseSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class FacultyViewSet(viewsets.ModelViewSet):
     queryset = Faculty.objects.filter(is_active=True).order_by('-id')
@@ -152,8 +173,12 @@ class demofileViewSet(viewsets.ModelViewSet):
     queryset = demofile.objects.filter(is_active=True).order_by('-id')
     serializer_class = demofileSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['book']
 
 class demolectureViewSet(viewsets.ModelViewSet):
     queryset = demolecture.objects.filter(is_active=True).order_by('-id')
     serializer_class = demolectureSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['lecture']
