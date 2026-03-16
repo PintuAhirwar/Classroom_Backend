@@ -44,14 +44,14 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "classroom-backend-dvcd.onrender.com",
-    "classroomeducation.onrender.com",
+    "classroom-frontend-24i8.onrender.com",
 
 ]
 # CORS (dev)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",                 # local dev
     "http://127.0.0.1:3000",
-    "https://classroomeducation.onrender.com",  # frontend live
+    "https://classroom-frontend-24i8.onrender.com",  # frontend live
 ]
 
 
@@ -65,7 +65,7 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://classroomeducation.onrender.com",
+    "https://classroom-frontend-24i8.onrender.com",
 ]
 
 CSRF_COOKIE_SECURE = True
