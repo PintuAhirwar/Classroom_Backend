@@ -43,7 +43,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "classroom.onrender.com",
+    "classroom-backend-dvcd.onrender.com",
     "classroomeducation.onrender.com",
 
 ]
