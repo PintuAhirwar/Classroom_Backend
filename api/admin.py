@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Slider, Faculty, Testimonial, Marks, demofile, demolecture
+from .models import Slider, Faculty, Testimonial, Marks, demofile, demolecture, FloatingCard
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser
 
@@ -24,18 +24,34 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(CustomUser, CustomUserAdmin)
 
+class FloatingCardInline(admin.TabularInline):
+    model = FloatingCard
+    extra = 0
+    max_num = 5
+    fields = ['position_index', 'label', 'sub_label', 'icon', 'icon_color', 'bg_color', 'is_active']
+    ordering = ['position_index']
+ 
+ 
 @admin.register(Slider)
 class SliderAdmin(admin.ModelAdmin):
     list_display = ['title', 'is_active', 'show_search', 'created_at']
+    inlines = [FloatingCardInline]
     fieldsets = (
         (None, {
             'fields': ('title', 'description', 'show_search', 'is_active')
         }),
         ('Images', {
             'fields': ('desktop_image', 'mobile_image'),
-            'description': 'Desktop: 2400x750px landscape | Mobile: 750x900px portrait'
+            'description': 'Desktop: 2400x750px | Mobile: 750x900px'
         }),
     )
+ 
+ 
+@admin.register(FloatingCard)
+class FloatingCardAdmin(admin.ModelAdmin):
+    list_display = ['label', 'slider', 'position_index', 'is_active']
+    list_filter = ['slider', 'is_active']
+    ordering = ['slider', 'position_index']
 
 
 @admin.register(Faculty)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Slider, Faculty, Testimonial, Marks, demofile, demolecture
+from .models import Slider, Faculty, Testimonial, Marks, demofile, demolecture, FloatingCard, Enquiry
 from django.contrib.auth import authenticate
 from .models import CustomUser
 from courses.models import Lecture, Book
@@ -52,12 +52,23 @@ class PublicUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ["id", "name"]
         
+class FloatingCardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FloatingCard
+        fields = ['id', 'label', 'sub_label', 'icon', 'icon_color', 'bg_color', 'position_index']
+ 
+ 
 class SliderSerializer(serializers.ModelSerializer):
+    floating_cards = FloatingCardSerializer(many=True, read_only=True)
+ 
     class Meta:
         model = Slider
-        fields = ['id', 'title', 'description',
-                  'desktop_image', 'mobile_image',
-                   'show_search', 'is_active']
+        fields = [
+            'id', 'title', 'description',
+            'desktop_image', 'mobile_image',
+            'show_search', 'is_active',
+            'floating_cards',
+        ]
 
 class FacultySerializer(serializers.ModelSerializer):
     class Meta:
@@ -110,3 +121,7 @@ class demolectureSerializer(serializers.ModelSerializer):
             'image':      str(obj.lecture.image) if obj.lecture.image else None,
         }
 
+class EnquirySerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Enquiry
+        fields = ['name', 'email', 'phone', 'subject', 'message']

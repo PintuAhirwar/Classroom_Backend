@@ -79,9 +79,54 @@ class Slider(models.Model):
     show_search = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
-    
+ 
     def __str__(self):
         return self.title
+ 
+ 
+class FloatingCard(models.Model):
+    """
+    5 fixed-position floating cards for the hero banner (show_search=True slider).
+ 
+    Position map (matches FloatingCards.jsx):
+        0 → Top Center-Left   (e.g. Reliance)
+        1 → Top Right         (e.g. L&T)
+        2 → Middle Left       (e.g. ICICI Bank)
+        3 → Middle Right      (e.g. TCS)
+        4 → Bottom Left       (e.g. Accenture)
+    """
+    POSITION_CHOICES = [
+        (0, 'Top Center-Left'),
+        (1, 'Top Right'),
+        (2, 'Middle Left'),
+        (3, 'Middle Right'),
+        (4, 'Bottom Left'),
+    ]
+ 
+    slider = models.ForeignKey(
+        Slider,
+        on_delete=models.CASCADE,
+        related_name='floating_cards'
+    )
+    label = models.CharField(max_length=80, help_text="Main text, e.g. Reliance Industries")
+    sub_label = models.CharField(max_length=80, blank=True, help_text="Optional second line")
+    icon = models.CharField(max_length=100, help_text="Iconify icon name, e.g. mdi:bank")
+    icon_color = models.CharField(max_length=20, default='#2563eb')
+    bg_color = models.CharField(max_length=20, default='#ffffff')
+    position_index = models.PositiveSmallIntegerField(
+        choices=POSITION_CHOICES,
+        default=0,
+        help_text="0=Top-CenterLeft | 1=Top-Right | 2=Mid-Left | 3=Mid-Right | 4=Bottom-Left"
+    )
+    is_active = models.BooleanField(default=True)
+ 
+    class Meta:
+        ordering = ['position_index']
+        unique_together = [['slider', 'position_index']]
+ 
+    def __str__(self):
+        return f"{self.slider.title} — {self.label} (pos {self.position_index})"
+    
     
 class Faculty(models.Model):
     name = models.CharField(max_length=50)
@@ -149,3 +194,14 @@ class demolecture(models.Model):
 
     def __str__(self):
         return self.title
+
+class Enquiry(models.Model):
+    name       = models.CharField(max_length=100)
+    email      = models.EmailField()
+    phone      = models.CharField(max_length=20)
+    subject    = models.CharField(max_length=200)
+    message    = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.subject}"

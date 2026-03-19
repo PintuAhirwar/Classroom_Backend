@@ -2,7 +2,7 @@ from urllib import response
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, generics
 from .models import Slider, Faculty, Testimonial, Marks, demofile, demolecture, CustomUser
-from .serializers import SliderSerializer, FacultySerializer, TestimonialSerializer, MarksSerializer, demofileSerializer, demolectureSerializer, ProfileSerializer, RegisterSerializer, UserSerializer
+from .serializers import SliderSerializer, FacultySerializer, TestimonialSerializer, MarksSerializer, demofileSerializer, demolectureSerializer, ProfileSerializer, RegisterSerializer, UserSerializer, EnquirySerializer
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -182,3 +182,33 @@ class demolectureViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['lecture']
+
+class EnquiryView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = EnquirySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            data = serializer.validated_data
+
+            # Mail send karo
+            send_mail(
+                subject=f"New Enquiry: {data['subject']}",
+                message=f"""
+New enquiry received:
+
+Name:    {data['name']}
+Email:   {data['email']}
+Phone:   {data['phone']}
+Subject: {data['subject']}
+
+Message:
+{data['message']}
+                """,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.ENQUIRY_EMAIL],  # tumhara email
+                fail_silently=False,
+            )
+            return Response({"message": "Enquiry submitted successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

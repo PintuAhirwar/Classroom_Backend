@@ -6,7 +6,7 @@ from .views import (
     SliderViewSet, FacultyViewSet, 
     TestimonialViewSet, MarksViewSet, demofileViewSet, 
     demolectureViewSet, LoginView, RegisterView, VerifyOTPView, ProfileView,
-    LogoutView
+    LogoutView, EnquiryView
 )
 
 
@@ -27,6 +27,7 @@ urlpatterns = [
     path('auth/verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
     path('auth/profile/', ProfileView.as_view(), name='profile'),
     path('authlogout/', LogoutView.as_view(), name='logout'),
+    path('enquiry/', EnquiryView.as_view(), name='enquiry'),
     
     # JWT refresh
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

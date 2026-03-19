@@ -111,9 +111,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'Taxhubeducation@gmail.com'
-EMAIL_HOST_PASSWORD = 'temf acma nhtp ntaa'  # use app password
+EMAIL_HOST_USER = 'Classroomstudentcare@gmail.com'
+EMAIL_HOST_PASSWORD = 'yjxh ulto jpbs ympl'  # use app password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+ENQUIRY_EMAIL       = 'classroomstudentcare@gmail.com'
 
 # dj-allauth settings
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
